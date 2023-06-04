@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  name              String?
+  email             String?
+  emailVerified     DateTime?
+  mobilePhoneNumber String?   @unique
+  orders            Order[]   @relation("UserOrders")
+}
+
+model Order {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String     @db.ObjectId
+  user        User       @relation("UserOrders", fields: [userId], references: [id])
+  userName    String?
+  userEmail   String?
+  userMobile  String?
+  orderEats   OrderEat[]
+  eatQuantity Int[]
+  city        String?
+  street      String?
+  house       String?
+  totalAmount Int?
+  created     DateTime   @default(now())
+  updated     DateTime   @updatedAt
+}
+
+model Shop {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  name      String
+  href      String
+  latitude  Float?
+  longitude Float?
+  imageSrc  String
+  imageAlt  String
+  created   DateTime @default(now())
+  updated   DateTime @updatedAt
+  eats      Eat[]
+}
+
+model Eat {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  shopId      String     @db.ObjectId
+  name        String
+  ingredients String
+  price       Int
+  quantity    Int?
+  imageSrc    String
+  imageAlt    String
+  created     DateTime   @default(now())
+  updated     DateTime   @updatedAt
+  shop        Shop       @relation(fields: [shopId], references: [id])
+  orderEats   OrderEat[]
+}
+
+model OrderEat {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  orderId String @db.ObjectId
+  eatId   String @db.ObjectId
+  eat     Eat    @relation(fields: [eatId], references: [id])
+  order   Order  @relation(fields: [orderId], references: [id])
+}
